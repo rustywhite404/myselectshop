@@ -47,7 +47,7 @@ public class NaverApiService {
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
 
         log.info("NAVER API Status Code : " + responseEntity.getStatusCode());
-
+        //log.info("responseEntity:"+responseEntity.getBody());
         return fromJSONtoItems(responseEntity.getBody());
     }
 
