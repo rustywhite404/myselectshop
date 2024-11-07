@@ -4,6 +4,7 @@ import com.sparta.myselectshop.dto.ProductMypriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
+import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,5 +51,11 @@ public class ProductService {
 //        return productRepository.findAll().stream() // findAll로 반환된 리스트를 스트림으로 변환
 //                .map(ProductResponseDto::new) // Product 객체를 ProductResponseDto로 변환
 //                .collect(Collectors.toList()); // 변환된 DTO 객체들을 리스트로 모은다
+    }
+
+    @Transactional
+    public void updateBySearch(Long id, ItemDto itemDto) {
+        Product product = productRepository.findById(id).orElseThrow(()->new NullPointerException("해당 상품이 존재하지 않습니다."));
+        product.updateByItemDto(itemDto);
     }
 }
