@@ -4,6 +4,7 @@ import com.sparta.myselectshop.dto.ProductMypriceRequestDto;
 import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
+import com.sparta.myselectshop.entity.User;
 import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,8 @@ public class ProductService {
     private final ProductRepository productRepository;
     public static final int MIN_MY_PRICE = 100;
 
-    public ProductResponseDto createProduct(ProductRequestDto requestDto) {
-        Product product = productRepository.save(new Product(requestDto));
+    public ProductResponseDto createProduct(ProductRequestDto requestDto, User user) {
+        Product product = productRepository.save(new Product(requestDto, user));
         return new ProductResponseDto(product);
     }
 
@@ -37,8 +38,8 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    public List<ProductResponseDto> getProducts() {
-        List<Product> productList = productRepository.findAll(); //var 단축키
+    public List<ProductResponseDto> getProducts(User user) {
+        List<Product> productList = productRepository.findAllByUser(user); //var 단축키
         List<ProductResponseDto> responseDtoList = new ArrayList<>();
         //iter 단축키(향상된 for문)
         for (Product product : productList) {
@@ -48,7 +49,7 @@ public class ProductService {
         return responseDtoList;
 
         //stream을 써서 표현하려면 이렇게
-//        return productRepository.findAll().stream() // findAll로 반환된 리스트를 스트림으로 변환
+//        return productRepository.findAllByUser(user).stream() // findAll로 반환된 리스트를 스트림으로 변환
 //                .map(ProductResponseDto::new) // Product 객체를 ProductResponseDto로 변환
 //                .collect(Collectors.toList()); // 변환된 DTO 객체들을 리스트로 모은다
     }
@@ -57,5 +58,11 @@ public class ProductService {
     public void updateBySearch(Long id, ItemDto itemDto) {
         Product product = productRepository.findById(id).orElseThrow(()->new NullPointerException("해당 상품이 존재하지 않습니다."));
         product.updateByItemDto(itemDto);
+    }
+
+    public List<ProductResponseDto> getAllProducts() {
+        return productRepository.findAll().stream() // findAll로 반환된 리스트를 스트림으로 변환
+                .map(ProductResponseDto::new) // Product 객체를 ProductResponseDto로 변환
+                .collect(Collectors.toList()); // 변환된 DTO 객체들을 리스트로 모은다
     }
 }
