@@ -31,7 +31,7 @@ public class NaverApiService {
         URI uri = UriComponentsBuilder
                 .fromUriString("https://openapi.naver.com")
                 .path("/v1/search/shop.json")
-                .queryParam("display", 15)
+                .queryParam("display", 10)
                 .queryParam("query", query)
                 .encode()
                 .build()

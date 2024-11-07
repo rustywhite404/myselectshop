@@ -5,15 +5,19 @@ import com.sparta.myselectshop.dto.ProductRequestDto;
 import com.sparta.myselectshop.dto.ProductResponseDto;
 import com.sparta.myselectshop.entity.Product;
 import com.sparta.myselectshop.entity.User;
+import com.sparta.myselectshop.entity.UserRoleEnum;
 import com.sparta.myselectshop.naver.dto.ItemDto;
 import com.sparta.myselectshop.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,31 +42,28 @@ public class ProductService {
         return new ProductResponseDto(product);
     }
 
-    public List<ProductResponseDto> getProducts(User user) {
-        List<Product> productList = productRepository.findAllByUser(user); //var 단축키
-        List<ProductResponseDto> responseDtoList = new ArrayList<>();
-        //iter 단축키(향상된 for문)
-        for (Product product : productList) {
-            responseDtoList.add(new ProductResponseDto(product));
+    public Page<ProductResponseDto> getProducts(User user, int page, int size, String sortBy, boolean isAsc) {
+        //페이징 처리
+        Sort.Direction direction = isAsc ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, sortBy);
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        //유저의 권한에 따라 조회 항목 변경(ADMIN이면 전체 리스트)
+        UserRoleEnum userRoleEnum = user.getRole();
+        Page<Product> productList;
+        if(userRoleEnum == UserRoleEnum.USER){
+            productList = productRepository.findAllByUser(user, pageable);
+        }else {
+            productList = productRepository.findAll(pageable);
         }
+        return productList.map(ProductResponseDto::new);
 
-        return responseDtoList;
-
-        //stream을 써서 표현하려면 이렇게
-//        return productRepository.findAllByUser(user).stream() // findAll로 반환된 리스트를 스트림으로 변환
-//                .map(ProductResponseDto::new) // Product 객체를 ProductResponseDto로 변환
-//                .collect(Collectors.toList()); // 변환된 DTO 객체들을 리스트로 모은다
     }
 
     @Transactional
     public void updateBySearch(Long id, ItemDto itemDto) {
-        Product product = productRepository.findById(id).orElseThrow(()->new NullPointerException("해당 상품이 존재하지 않습니다."));
+        Product product = productRepository.findById(id).orElseThrow(() -> new NullPointerException("해당 상품이 존재하지 않습니다."));
         product.updateByItemDto(itemDto);
     }
 
-    public List<ProductResponseDto> getAllProducts() {
-        return productRepository.findAll().stream() // findAll로 반환된 리스트를 스트림으로 변환
-                .map(ProductResponseDto::new) // Product 객체를 ProductResponseDto로 변환
-                .collect(Collectors.toList()); // 변환된 DTO 객체들을 리스트로 모은다
-    }
 }
