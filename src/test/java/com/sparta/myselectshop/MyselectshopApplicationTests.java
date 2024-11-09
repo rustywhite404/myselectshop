@@ -1,5 +1,9 @@
 package com.sparta.myselectshop;
 
+import com.sparta.myselectshop.study.ManyToMany.Student;
+import com.sparta.myselectshop.study.ManyToMany.StudentRepository;
+import com.sparta.myselectshop.study.ManyToMany.Subject;
+import com.sparta.myselectshop.study.ManyToMany.SubjectRepository;
 import com.sparta.myselectshop.study.ManyToOne.Book;
 import com.sparta.myselectshop.study.ManyToOne.BookRepository;
 import com.sparta.myselectshop.study.ManyToOne.Writer;
@@ -32,6 +36,12 @@ class MyselectshopApplicationTests {
 
     @Autowired
     WriterRepository writerRepository;
+
+    @Autowired
+    StudentRepository studentRepository;
+
+    @Autowired
+    SubjectRepository subjectRepository;
 
     @Test
     @Rollback(value = false)
@@ -116,4 +126,24 @@ class MyselectshopApplicationTests {
         bookRepository.saveAll(bookList);
     }
 
+    @Test
+    @Rollback(value = false)
+    void test4() {
+        Student student1 = Student.builder().name("김철수").grade(2).build();
+        Student student2 = Student.builder().name("이민정").grade(3).build();
+
+        Subject subject1 = Subject.builder().subjectName("물리1").teacher("조현식").build();
+        Subject subject2 = Subject.builder().subjectName("화학").teacher("서윤진").build();
+        Subject subject3 = Subject.builder().subjectName("국어").teacher("이정수").build();
+
+        student1.addSubjectList(subject1);
+        student1.addSubjectList(subject2);
+        student1.addSubjectList(subject3);
+
+        student2.addSubjectList(subject2);
+        student2.addSubjectList(subject3);
+        // Repository에 저장
+        studentRepository.saveAll(List.of(student1, student2));
+        subjectRepository.saveAll(List.of(subject1, subject2, subject3));
+    }
 }
