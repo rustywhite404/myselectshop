@@ -4,10 +4,7 @@ import com.sparta.myselectshop.study.ManyToMany.Student;
 import com.sparta.myselectshop.study.ManyToMany.StudentRepository;
 import com.sparta.myselectshop.study.ManyToMany.Subject;
 import com.sparta.myselectshop.study.ManyToMany.SubjectRepository;
-import com.sparta.myselectshop.study.ManyToOne.Book;
-import com.sparta.myselectshop.study.ManyToOne.BookRepository;
-import com.sparta.myselectshop.study.ManyToOne.Writer;
-import com.sparta.myselectshop.study.ManyToOne.WriterRepository;
+import com.sparta.myselectshop.study.ManyToOne.*;
 import com.sparta.myselectshop.study.oneToOne.Profile;
 import com.sparta.myselectshop.study.oneToOne.ProfileRepository;
 import com.sparta.myselectshop.study.oneToOne.Visitor;
@@ -20,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @SpringBootTest
@@ -42,6 +41,9 @@ class MyselectshopApplicationTests {
 
     @Autowired
     SubjectRepository subjectRepository;
+
+    @Autowired
+    BookStoreRepository bookStoreRepository;
 
     @Test
     @Rollback(value = false)
@@ -146,4 +148,55 @@ class MyselectshopApplicationTests {
         studentRepository.saveAll(List.of(student1, student2));
         subjectRepository.saveAll(List.of(subject1, subject2, subject3));
     }
+
+    @Test
+    @Rollback(value = false)
+    void test5() {
+        Writer writer1 = Writer.builder()
+                .age(39)
+                .name("테드 창")
+                .nation("Taiwan")
+                .build();
+
+        List<Book> bookList = new ArrayList<>();
+        //BookStore store = BookStore.builder().master("김사장").name("동네책방").build();
+
+        Book book1 = Book.builder()
+                .price(27000)
+                .subject("컨택트")
+                .writer(writer1)
+                .bookStore(bookStoreRepository.findById(1L).orElseThrow(()->new IllegalArgumentException("해당 서점이 존재하지 않습니다.")))
+                .sell(95)
+                .build();
+
+        bookList.add(book1);
+//        writerRepository.save(writer1);
+//        bookStoreRepository.save(store);
+        bookRepository.saveAll(bookList);
+    }
+
+    @Test
+    @Rollback(value = false)
+    void test6() {
+        BookStore bookStore = bookStoreRepository.findById(1L).orElseThrow(NullPointerException::new);
+        System.out.println("서점명:"+bookStore.getName());
+        System.out.println("이 서점에서 판매중인 책:");
+
+        for(Book book:bookStore.getBookList()){
+            System.out.println("- "+book.getSubject());
+        }
+    }
+
+    @Test
+    @Rollback(value = false)
+    void test7() {
+        List<Book> books = bookRepository.findByBookStoreId(1L);
+        List<StoreBookDTO> bookList = books.stream().map(book -> new StoreBookDTO(book.getSubject(),book.getBookStore().getName(),book.getBookStore().getMaster())).collect(Collectors.toList());
+        for (StoreBookDTO book : bookList) {
+            System.out.println("책 제목:"+book.getSubject());
+            System.out.println("서점명:"+book.getName());
+            System.out.println("서점 주인:"+book.getMaster());
+        }
+    }
+
 }

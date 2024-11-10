@@ -22,8 +22,11 @@ public class Book {
     @Column(nullable = false)
     int price;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     @JoinColumn(name="writer_id")
     private Writer writer;
 
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @JoinColumn(name="bookstore_id")
+    private BookStore bookStore;
 }
