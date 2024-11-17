@@ -10,6 +10,7 @@ import com.sparta.myselectshop.jwt.JwtUtil;
 import com.sparta.myselectshop.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,9 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
+
+    @Value("${redirect.uri}")
+    private String redirectUri;
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -65,11 +69,13 @@ public class KakaoService {
 
         // HTTP Body 생성
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+
         body.add("grant_type", "authorization_code");
         body.add("client_id", "7625ef28a16c8ee3adb6600d2ee244a9");
-        body.add("redirect_uri", "http://localhost:8080/api/user/kakao/callback");
+        //프로퍼티로 uri 빼서 관리하기로 함(운영/로컬 구분)
+        //uri 수정되면 카카오 개발자 센터 redirect uri랑 login.html에도 파라미터 변경 같이 해줘야 함
+        body.add("redirect_uri", redirectUri);
         body.add("code", code);
-
         RequestEntity<MultiValueMap<String, String>> requestEntity = RequestEntity
                 .post(uri)
                 .headers(headers)

@@ -14,6 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,12 +30,16 @@ import java.util.List;
 @RequestMapping("/api")
 public class UserController {
 
+    @Value("${redirect.uri}")
+    private String redirectUri;
+
     private final UserService userService;
     private final FolderService folderService;
     private final KakaoService kakaoService;
 
     @GetMapping("/user/login-page")
-    public String loginPage() {
+    public String loginPage(Model model) {
+        model.addAttribute("redirectUri", redirectUri);
         return "login";
     }
 

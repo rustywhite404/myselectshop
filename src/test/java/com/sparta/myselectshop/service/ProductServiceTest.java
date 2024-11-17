@@ -8,14 +8,18 @@ import com.sparta.myselectshop.entity.User;
 import com.sparta.myselectshop.repository.FolderRepository;
 import com.sparta.myselectshop.repository.ProductFolderRepository;
 import com.sparta.myselectshop.repository.ProductRepository;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.MessageSource;
 
+import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +36,10 @@ class ProductServiceTest {
 
     @Mock
     ProductFolderRepository productFolderRepository;
+
+    @Mock
+    private MessageSource messageSource;
+
 
     @InjectMocks
     ProductService productService; // Mock 객체를 주입
@@ -75,7 +83,17 @@ class ProductServiceTest {
         ProductMypriceRequestDto requestMyPriceDto = new ProductMypriceRequestDto();
         requestMyPriceDto.setMyprice(myprice);
 
-        ProductService productService = new ProductService(productRepository, folderRepository, productFolderRepository);
+        // Mocking MessageSource
+        MessageSource messageSource = Mockito.mock(MessageSource.class);
+        Mockito.when(messageSource.getMessage(
+                Mockito.eq("below.min.my.price"),  // 정확한 메시지 키
+                Mockito.any(Object[].class),       // 매개변수 매칭
+                Mockito.eq("Wrong Price"),         // 기본 메시지 매칭
+                Mockito.eq(Locale.getDefault())    // Locale 매칭
+        )).thenReturn("유효하지 않은 관심 가격입니다. 최소 " + ProductService.MIN_MY_PRICE + "원 이상으로 설정해주세요.");
+
+
+        ProductService productService = new ProductService(productRepository, folderRepository, productFolderRepository, messageSource);
 
         // when
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
